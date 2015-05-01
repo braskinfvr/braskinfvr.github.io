@@ -3,7 +3,7 @@
 
 html,body {
 	height:100%;
-    background:center no-repeat fixed url('http://www.ellit.co/wp-content/uploads/2015/01/ellie-12.jpg');
+    background:center no-repeat fixed url('/images/bikini.jpg');
     background-size: cover;
     color:#444;
     font-family: 'Lato', sans-serif;
