@@ -8,22 +8,33 @@
       version    : 'v2.2' // point to the latest Facebook Graph API version
     });    
   };
+
+function setUser(user){
+  tc.user(user.attributes);
+  localStorage.setItem('user',JSON.stringify(tc.user()));              
+}
+
+function reloadUserData(){
+  //tc.user(Parse.User.current().fetch().attributes);
+  Parse.User.current().fetch({success: function(user) { setUser(user)}})
+}
+  
  
   function fb_login() {
     Parse.FacebookUtils.logIn("public_profile,email", {
             success: function(user) {
-            if (!user.existed()) {
-                
-              alert("User signed up and logged in through Facebook!");
+            if (user.existed()) {                
+              //alert("User signed up and logged in through Facebook!");
                 FB.api('/me', function(me) {
+                    user.set('avatar_url', "http://graph.facebook.com/"+me.id+"/picture?type=square");
                     user.set("displayName", me.name);
                     user.set("email", me.email);
                     user.save();
-                    //console.log("/me response", me);
+                    setUser(user);              
+                    redirect('/#city/Tel-Aviv');
                 });
             } else {
-              tc.user(user.attributes);
-              localStorage.setItem('user',JSON.stringify(tc.user()));
+              setUser(user);              
               redirect('/#city/Tel-Aviv');
             }
           },

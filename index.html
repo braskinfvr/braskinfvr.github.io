@@ -34,10 +34,16 @@
                 <li><a href="#section5">More</a></li>
                 <li><a href="#section6">Last</a></li>
                 <li>&nbsp;</li>
-            </ul> -->
-            <ul class="nav navbar-nav navbar-right">
+            </ul> -->            
+            <ul class="nav navbar-nav navbar-right" data-bind='if: user && user()'>
                 <li>
-                    <a data-bind='text: (user() || {}).displayName'></a>    
+                    <img style='border-radius:100px' data-bind='attr: {src : tc.user().avatar_url }'/>
+                </li>            
+                <li data-bind='if: user().points && user().points > 0'>
+                    <a data-bind='text: user().displayName+" ("+(user().points || 0)+")", attr: { href: encodeURI("#user/"+user().username) }'></a>
+                </li>
+                <li>
+                    <a href='"#logout'>Logout</a>
                 </li>
             </ul>
         </div>
@@ -83,7 +89,7 @@
                                     <p data-bind='text: attributes.description'></p>
                                     <hr>
                                     <p class='btn btn-success' data-bind='click: $parent.submitChallenge, visible: !$data.completed()'>MARK AS DONE (<span data-bind='text: attributes.points'></span> points)</p>
-                                    <p class='btn btn-success' disabled="disabled" data-bind='visible: $data.completed()'>DONE!</p>
+                                    <p class='btn btn-info' disabled="disabled" data-bind='visible: $data.completed()'>DONE! (<span data-bind='text: attributes.points'></span> points)</p>
                                     <!-- <p data-bind='visible: done'>DONE</p> -->
                                     <hr>
                                 </div>
@@ -179,16 +185,14 @@
     <h1 class="text-center" data-bind='text: challenge_name'></h1>
     <div class="row">
         <div class="col-sm-6 col-sm-offset-3">
-            <h3 class="text-center lato slideInUp animate" data-bind='text: challenge_subtitle'></h3>
+            <h3 class="text-center lato slideInUp animate" data-bind='text: challenge_location'></h3>
             <br>
             <div class="row">
-                <div class="col-xs-4 col-xs-offset-1" data-bind='text: challenge_desc'>Some brand-tacular designs even have home page content that is taller that 12,000 pixels. That's a lotta content.</div>
-                <div class="col-xs-2"></div>
-                <div class="col-xs-4 text-right">Anyhoo, this is just some random blurb of text, and Bootply.com is a playground and code editor for Bootstrap.</div>
+                <div class='col-xs-11 col-xs-offset-1' data-bind='text: challenge_desc'></div>
             </div>
             <br>
             <p class="text-center">
-                <img src="//placehold.it/444x222/444/FFF" class="img-responsive thumbnail center-block ">
+                <img data-bind='attr: { src: $data.img || tc.randomImageSrc(400,400) }' class="img-responsive thumbnail center-block ">
             </p>
         </div>
     </div>
@@ -243,7 +247,7 @@
             </address>
                 <address>
               <strong>Email Us</strong><br>
-              <a href="mailto:#">first.last@example.com</a>
+              <a href="mailto:#">ohad.partuck@gmail.com</a>
             </address>
             </div>
         </div>
@@ -257,7 +261,12 @@
                 Badges to achieve near <span data-bind="text: city"></span>
             </h2>
 
-            <select data-bind="visible: chooseCities, options: availableCities, selectedOptions: city,event:{ change: function(){ console.log(city); chooseCities(false);} }" style='width:100%; font-size:50px'></select>
+            <select class='form-control' data-bind="visible: chooseCities, 
+            options: availableCities, 
+            optionsCaption: 'Select...',
+            selectedOptions: city,event:{ change: function(){ redirect('#city/'+$data.city()[0]); chooseCities(false);} }" style='width:100%;'>
+                <option selected disabled>Choose here</option>
+            </select>
             <p class='text-right' style='font-size=smaller'><a href='#' data-bind="click: function(){ chooseCities(!chooseCities()) }">elsewhere?</a></p>
             <hr>
             <ul data-bind="foreach: themes">
@@ -266,7 +275,7 @@
                    <a data-bind='text: attributes.badge, attr: { href: "#theme/"+id }'></a>
                 </h3>
                     <div class="media-left">
-                        <img src="//placehold.it/100">
+                        <img data-bind='attr: { src: $data.img || tc.randomImageSrc() }'>
                     </div>
                     <div class="media-body media-middle">
                         <p data-bind='text: attributes.description'></p>
@@ -423,6 +432,11 @@ function vm() {
   self.lastName = "Bertington";
   self.color = ko.observable("blue");
   self.foo = ko.observable();
+  self.randomImageSrc = function(x,y) {
+    x = x || 100
+    y = y || 100
+    return "http://lorempixel.com/"+x+"/"+y+"/?rnd="+Math.random();
+  }
 
   //user  
   self.user = ko.observable(null); 
@@ -430,7 +444,7 @@ function vm() {
   //self.user({displayName: 'fake user'})
 
   //city view
-  self.city = ko.observable("Tel-Aviv");
+  self.city = ko.observable("");
   self.title = ko.observable("");  
   self.themes = ko.observable(defThemes)
   self.chooseCities = ko.observable("");
@@ -444,7 +458,7 @@ function vm() {
   self.challengeTitle = ko.observable("");
   self.challenge_name = ko.observable("");
   self.challenge_desc = ko.observable("bla");
-  self.challenge_subtitle = ko.observable("bla");
+  self.challenge_location = ko.observable("");
 
   self.showCity = function(themes) {
     self.title('Themes');
@@ -462,14 +476,31 @@ function vm() {
   self.showChallenge = function(challenge) {
     self.challengeTitle('Challenge info for '+challenge.id);
     self.challenge_name(challenge.attributes.name);
+    self.challenge_location(challenge.attributes.location);
     self.challenge_desc(challenge.attributes.description);
     show("#section3");
   }
 
+  self.showUserPage = function(userID) {
+    alert('not done yet - for userID '+userID);
+  }
+
   self.submitChallenge = function(challenge) {    
-    alert("submitting challenge id "+challenge.id+" (mock)");
-    challenge.completed(true);
+    function updateCompleted(id) {
+        challenge.completed(true);
+        reloadUserData(); //update points and stuff
     }
+    Parse.Cloud.run('mark_challenge_completed', { challenge_id: challenge.id }, {
+        success: function(response) {
+            updateCompleted(challenge.id);
+        },
+      error: function(error) { 
+            updateCompleted(challenge.id);
+        }
+    });
+  }
+
+
 
   Sammy(function() {
         this.get('#city/:city', function() {
@@ -484,9 +515,13 @@ function vm() {
 
         this.get('#theme/:theme_id', function() {  
             if (!self.user()) return this.redirect('/#');
-            //$.get("/mail", { folder: this.params.folder }, self.showThemes);
             getChallengesForTheme(this.params.theme_id, function(theme) {
-                theme.attributes.challenges.map(function(c) { c.completed = ko.observable(false); return c; }); 
+                theme.attributes.challenges.map(function(c) { 
+                    var hasCompletedThisChallenge = !!(tc.user().challenges_completed || {})[c.id];
+                    c.completed = ko.observable(hasCompletedThisChallenge); 
+
+                    return c; 
+                }); 
                 self.showTheme(theme);
             })
         });
@@ -497,6 +532,19 @@ function vm() {
             getChallengeById(this.params.challenge_id, function(challenge) {
                 self.showChallenge(challenge);
             });
+        });
+
+        this.get('#logout', function() {
+            //$.get("/mail", { folder: this.params.folder }, self.showThemes);
+            tc.user(null);
+            localStorage.removeItem('user');
+            redirect('/#');
+            //self.showUserPage(this.params.username);
+        });
+
+        this.get('#user/:username', function() {
+            //$.get("/mail", { folder: this.params.folder }, self.showThemes);
+            self.showUserPage(this.params.username);
         });
 
         this.get('', function() { 
@@ -515,3 +563,5 @@ set('foo','bar');
 </script>
   </body>
 </html>
+
+
