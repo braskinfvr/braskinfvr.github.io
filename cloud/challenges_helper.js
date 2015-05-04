@@ -8,13 +8,16 @@ function did_user_completed_all_theme_challenges(user_completed_challenges, them
 		console.log(theme_challenge_ids);
 
 		//TODO count the number of hits.
+		counter = 0;
 		theme_challenge_ids.forEach(function (theme_challenge_id) {
 			if (user_completed_challenge_ids.indexOf(theme_challenge_id) == -1){
 				return  false;
+			}else{
+				counter	+= 1;
 			}
 		})
 
-		return true;
+		return counter >= theme_challenge_ids.length;
 }
 
 function completed_task_payload(){
@@ -44,14 +47,13 @@ exports.mark_challenge_completed = function(user, challenge){
 		console.log(challenges_completed);
 		var theme_challenges = theme.attributes.challenges;
 		console.log(theme_challenges);
-		console.log("checking theme" + theme.attributes.name);
+		console.log("checking theme " + theme.attributes.name);
 		//check if needs to update the themes completed for the user
 		if (did_user_completed_all_theme_challenges(challenges_completed, theme_challenges)){
 			//actually update in the user model	
 			themes_completed[theme.id] = {"created_at": new Date().getTime(), "badge": theme.badge};
 			user.set("themes_completed", themes_completed);
-			console.log("333");
-			console.log(themes_completed);
+			console.log("adding theme to user completed");
 			user.save();
 		}else{
 			console.log("did_user NOT _completed_all_theme_challenges");
