@@ -90,6 +90,12 @@
                                     <hr>
                                     <p class='btn btn-success' data-bind='click: $parent.submitChallenge, visible: !$data.completed()'>DONE (<span data-bind='text: attributes.points'></span> points)</p>
                                     <p class='btn btn-info' disabled="disabled" data-bind='visible: $data.completed()'>DONE! (<span data-bind='text: attributes.points'></span> points)</p>
+
+                                    <form name="form1" enctype="multipart/form-data"
+                                          onsubmit="startUpload();">
+                                        <input type="file" id="profilePhotoFileUpload">
+                                        <input type="submit" value="SUBMIT" />
+                                    </form>
                                     <!-- <p data-bind='visible: done'>DONE</p> -->
                                     <hr>
                                 </div>
@@ -211,7 +217,7 @@
                         <img data-bind='attr: { src: $data.img || tc.randomImageSrc() }'>
                     </div>
                 <div class="media-body media-middle">
-                <a data-bind='text: attributes.badge, attr: { href: "#theme/"+id }'></a>
+                     <a data-bind='text: attributes.badge, attr: { href: "#theme/"+id }'></a>
                 </div>
                 <br>
             </ul>            
@@ -376,6 +382,7 @@
 
     <script src="js/sammy.js"></script>
     <script src="js/fb_login.js"></script>
+    <script src="js/upload_images.js"></script>
 <script>
 
 function getThemesForCity(city_name, callback) {

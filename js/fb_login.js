@@ -21,7 +21,7 @@ function reloadUserData(){
   
  
   function fb_login() {
-    Parse.FacebookUtils.logIn("public_profile,email", {
+    Parse.FacebookUtils.logIn("public_profile", {
             success: function(user) {
             if (user.existed()) {                
               //alert("User signed up and logged in through Facebook!");
